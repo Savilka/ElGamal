@@ -8,15 +8,16 @@ namespace ElGamalGenerator
 {
     public class ElGamalGenerator
     {
-        public ElGamalGenerator()
+        /*public ElGamalGenerator()
         {
             PublicKeys["y"] = 0;
             PublicKeys["g"] = 0;
             PublicKeys["p"] = 0;
             PrivateKey = 0;
-        }
+        }*/
 
-        public Dictionary<string, int> PublicKeys { get; } = new();
+        private int _p, _g;
+        //public Dictionary<string, int> PublicKeys { get; } = new();
 
         private static readonly Random Random = new();
 
@@ -26,9 +27,16 @@ namespace ElGamalGenerator
 
         public void Run()
         {
-            var rndSeed = Random.Next(8, 32);
-            var p = GeneratePrime(rndSeed);
-            PublicKeys["p"] = p;
+            
+            Console.Write("Введите p:");
+            _p = Convert.ToInt32(Console.ReadLine());
+            if (IsMillerRabinPass(_p, (int) Math.Log2(_p) + 1, Random))
+            {
+                Console.Write("YEP COCK");
+            }
+            //var rndSeed = Random.Next(8, 32);
+            //var p = GeneratePrime(rndSeed);
+            //PublicKeys["p"] = p;
             // TODO: Add more content
             // pass
         }
@@ -73,20 +81,23 @@ namespace ElGamalGenerator
 
         private static bool IsMillerRabinPass(int candidate, int trialsNum, Random r)
         {
+            if (candidate % 2 == 0)
+            {
+                return false;
+            }
+            
             var maxDivisionByTwo = 0;
             var evenComponent = candidate - 1;
 
             while (evenComponent % 2 == 0)
             {
-                evenComponent >>= 1;
+                evenComponent /= 2;
                 maxDivisionByTwo++;
             }
-
-            Debug.Assert(FastPow(2, maxDivisionByTwo) * evenComponent == candidate - 1);
-
+            
             for (var i = 0; i < trialsNum; i++)
             {
-                var roundTester = r.Next(2, candidate);
+                var roundTester = r.Next(2, candidate - 1);
 
                 if (TrialComposite(roundTester, candidate, maxDivisionByTwo, evenComponent))
                 {
@@ -104,16 +115,23 @@ namespace ElGamalGenerator
             int evenComponent
             )
         {
-            if (FastPow(roundTester, evenComponent) % candidate == 1)
+            var x = FastPow(roundTester, evenComponent) % candidate;
+            
+            if (x == 1 || x == candidate - 1)
             {
                 return false;
             }
 
-            for (int i = 0; i < maxDivisionsByTwo; i++)
+            for (int i = 0; i < maxDivisionsByTwo - 1; i++)
             {
-                if (FastPow(roundTester, 
-                        evenComponent * FastPow(2,i)) 
-                    % candidate == 1)
+                x = FastPow(x, 2) % candidate;
+                
+                if (x == 1)
+                {
+                    return true;
+                }
+                
+                if (x == candidate - 1)
                 {
                     return false;
                 }
