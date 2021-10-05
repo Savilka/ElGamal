@@ -6,7 +6,11 @@ namespace ElGamalGenerator
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            // Do we need Generator Class?
+            // Mb we need smth more than int?
+            // Do we need architecture plan?
+            var generator = new ElGamalGenerator();
+            generator.Run();
         }
     }
 }
