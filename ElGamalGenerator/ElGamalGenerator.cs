@@ -108,14 +108,9 @@ namespace ElGamalGenerator
             return true;
         }
 
-        private static bool TrialComposite(
-            int roundTester, 
-            int candidate, 
-            int maxDivisionsByTwo,
-            int evenComponent
-            )
+        private static bool TrialComposite(int roundTester, int candidate, int maxDivisionsByTwo, int evenComponent)
         {
-            var x = FastPow(roundTester, evenComponent) % candidate;
+            var x = ModularPow(roundTester, evenComponent, candidate);
             
             if (x == 1 || x == candidate - 1)
             {
@@ -124,7 +119,7 @@ namespace ElGamalGenerator
 
             for (int i = 0; i < maxDivisionsByTwo - 1; i++)
             {
-                x = FastPow(x, 2) % candidate;
+                x = ModularPow(x, 2, candidate);
                 
                 if (x == 1)
                 {

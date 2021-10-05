@@ -27,6 +27,17 @@ namespace ElGamalGenerator
             return res;
         }
 
+        public static int ModularPow(int baseNum, int power, int modulus)
+        {
+            var res = 1;
+            for (int i = 0; i < power; i++)
+            {
+                res = (res * baseNum) % modulus;
+            }
+
+            return res;
+        }
+        
         /// <summary>
         /// 
         /// </summary>
