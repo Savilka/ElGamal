@@ -8,16 +8,17 @@ namespace ElGamalGenerator
 {
     public class ElGamalGenerator
     {
-        /*public ElGamalGenerator()
+        public ElGamalGenerator()
         {
             PublicKeys["y"] = 0;
             PublicKeys["g"] = 0;
             PublicKeys["p"] = 0;
             PrivateKey = 0;
-        }*/
+        }
 
         private int _p, _g;
-        //public Dictionary<string, int> PublicKeys { get; } = new();
+        
+        public Dictionary<string, int> PublicKeys { get; } = new();
 
         private static readonly Random Random = new();
 
@@ -40,45 +41,7 @@ namespace ElGamalGenerator
             // TODO: Add more content
             // pass
         }
-
-        private static int GeneratePrime(int seed)
-        {
-            var firstPrimes = ProceedSieveOfEratosthenes(50);
-            while(true)
-            {
-                var primeCandidate = GetLowLevelPrime(seed, firstPrimes);
-
-                if (!IsMillerRabinPass(primeCandidate, 5, Random))
-                {
-                    continue;
-                }
-
-                return primeCandidate;
-            }
-            
-        }
-
-        private static int GetLowLevelPrime(int n, int[] firstPrimes)
-        {
-            // if we pregenerate first primes we can run faster
-
-            while (true)
-            {
-                var primeCandidate = GenerateNBitNum(n, Random);
-
-                foreach (var divisor in firstPrimes)
-                {
-                    if (primeCandidate % divisor == 0 &&
-                        divisor * divisor <= primeCandidate)
-                    {
-                          break;
-                    }
-
-                    return primeCandidate;
-                }
-            }
-        }
-
+        
         private static bool IsMillerRabinPass(int candidate, int trialsNum, Random r)
         {
             if (candidate % 2 == 0)
@@ -134,7 +97,45 @@ namespace ElGamalGenerator
 
             return true;
         }
+        
+        private static int GeneratePrime(int seed)
+        {
+            var firstPrimes = ProceedSieveOfEratosthenes(50);
+            while(true)
+            {
+                var primeCandidate = GetLowLevelPrime(seed, firstPrimes);
 
+                if (!IsMillerRabinPass(primeCandidate, 5, Random))
+                {
+                    continue;
+                }
+
+                return primeCandidate;
+            }
+            
+        }
+
+        private static int GetLowLevelPrime(int n, int[] firstPrimes)
+        {
+            // if we pregenerate first primes we can run faster
+
+            while (true)
+            {
+                var primeCandidate = GenerateNBitNum(n, Random);
+
+                foreach (var divisor in firstPrimes)
+                {
+                    if (primeCandidate % divisor == 0 &&
+                        divisor * divisor <= primeCandidate)
+                    {
+                        break;
+                    }
+
+                    return primeCandidate;
+                }
+            }
+        }
+        
         private static int GenerateNBitNum(int n, Random r)
         {
             return r.Next(FastPow(2, n - 1) + 1, FastPow(2, n));
