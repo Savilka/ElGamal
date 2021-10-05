@@ -11,6 +11,7 @@ namespace ElGamalGenerator
             // Do we need architecture plan?
             var generator = new ElGamalGenerator();
             generator.Run();
+            Console.WriteLine(generator.PublicKeys["p"]);
         }
     }
 }

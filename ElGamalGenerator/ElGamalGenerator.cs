@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using static ElGamalGenerator.Utils;
 
 namespace ElGamalGenerator
@@ -15,14 +16,18 @@ namespace ElGamalGenerator
             PrivateKey = 0;
         }
 
-        public static Dictionary<string, int> PublicKeys { get; private set; }
+        public Dictionary<string, int> PublicKeys { get; } = new();
+
+        private static readonly Random Random = new();
+
         // How do we provide private key? As long as we don't have friend in C#?
         // Can we be inherited by ElGamalEncryptionSystem and make this protected?
         public int PrivateKey;
 
         public void Run()
         {
-            var p = GeneratePrime(1024);
+            var rndSeed = Random.Next(8, 32);
+            var p = GeneratePrime(rndSeed);
             PublicKeys["p"] = p;
             // TODO: Add more content
             // pass
@@ -30,11 +35,12 @@ namespace ElGamalGenerator
 
         private static int GeneratePrime(int seed)
         {
+            var firstPrimes = ProceedSieveOfEratosthenes(50);
             while(true)
             {
-                var primeCandidate = GetLLPrime(seed);
+                var primeCandidate = GetLowLevelPrime(seed, firstPrimes);
 
-                if (!IsMillerRabinPass(primeCandidate, 20))
+                if (!IsMillerRabinPass(primeCandidate, 5, Random))
                 {
                     continue;
                 }
@@ -44,19 +50,18 @@ namespace ElGamalGenerator
             
         }
 
-        private static int GetLLPrime(int n)
+        private static int GetLowLevelPrime(int n, int[] firstPrimes)
         {
             // if we pregenerate first primes we can run faster
-            var firstPrimes = ProceedSieveOfEratosthenes(1000);
 
             while (true)
             {
-                var primeCandidate = GenerateNBitNum(n);
+                var primeCandidate = GenerateNBitNum(n, Random);
 
-                foreach (var devisor in firstPrimes)
+                foreach (var divisor in firstPrimes)
                 {
-                    if (primeCandidate % devisor == 0 &&
-                        devisor * devisor <= primeCandidate)
+                    if (primeCandidate % divisor == 0 &&
+                        divisor * divisor <= primeCandidate)
                     {
                           break;
                     }
@@ -66,7 +71,7 @@ namespace ElGamalGenerator
             }
         }
 
-        private static bool IsMillerRabinPass(int candidate, int trialsNum)
+        private static bool IsMillerRabinPass(int candidate, int trialsNum, Random r)
         {
             var maxDivisionByTwo = 0;
             var evenComponent = candidate - 1;
@@ -81,7 +86,6 @@ namespace ElGamalGenerator
 
             for (var i = 0; i < trialsNum; i++)
             {
-                var r = new Random();
                 var roundTester = r.Next(2, candidate);
 
                 if (TrialComposite(roundTester, candidate, maxDivisionByTwo, evenComponent))
@@ -118,9 +122,8 @@ namespace ElGamalGenerator
             return true;
         }
 
-        private static int GenerateNBitNum(int n)
+        private static int GenerateNBitNum(int n, Random r)
         {
-            var r = new Random();
             return r.Next(FastPow(2, n - 1) + 1, FastPow(2, n));
         }
 
