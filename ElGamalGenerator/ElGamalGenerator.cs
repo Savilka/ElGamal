@@ -25,9 +25,11 @@ namespace ElGamalGenerator
 
         public void Run()
         {
-            var rndSeed = Random.Next(8, 31);
+            var rndSeed = Random.Next(8, 30);
             var p = GeneratePrime(rndSeed);
             PublicKeys["p"] = p;
+            var g = GeneratePrimitiveRoot(p, Random);
+            PublicKeys["g"] = g;
             // TODO: Add more content
             // pass
         }
@@ -131,6 +133,42 @@ namespace ElGamalGenerator
         private static int GenerateNBitNum(int n, Random r)
         {
             return r.Next(FastPow(2, n - 1) + 1, FastPow(2, n));
+        }
+
+        private static int GeneratePrimitiveRoot(int primeNumber, Random r)
+        {
+            var factors = new List<int>();
+            var primitiveRoots = new List<int>();
+            var phi = primeNumber - 1;
+            var factorizeNumber = phi;
+            
+            for (int i = 2; i * i <= factorizeNumber; i++)
+            {
+                if (factorizeNumber % i == 0)
+                {
+                    factors.Add(i);
+                    while (factorizeNumber % i == 0)
+                    {
+                        factorizeNumber /= i;
+                    }
+                }
+            }
+
+            for (int res = 2; res <= primeNumber; res++)
+            {
+                bool isPrimitive = true;
+                for (int i = 0; i < factors.Count && isPrimitive; i++)
+                {
+                    isPrimitive &= ModularPow(res, phi / factors[i], primeNumber) != 1;
+                }
+
+                if (isPrimitive)
+                {
+                    return res;
+                }
+            }
+            
+            return -1;
         }
 
         // TODO: Moderate access to the function
