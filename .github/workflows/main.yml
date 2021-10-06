@@ -1,13 +1,24 @@
-- name: Auto Issue List in README
-  # You may pin to the exact commit or the version.
-  # uses: seed-of-apricot/issue-list-readme@55669b219cbd65d46522bd6dde3067b8d1df3c5f
-  uses: seed-of-apricot/issue-list-readme@v1.1.0
-  with:
-    # token
-    GITHUB_TOKEN: 
-    # pattern to detect the place to locate the table
-    pattern: # optional, default is <!-- issueTable -->
-    # comma-separated labels to filter the issues
-    labels: # optional
-    # state of the issues to filter them (open or closed)
-    state: # optional, default is all
+name: git issues blog workflow
+
+on: 
+  push:
+    branches:
+      - master
+    paths:
+      - 'posts/*.md'
+      - 'posts/*/*.md'
+      - 'posts/*/*/*.md'
+
+
+jobs:
+  git-issues-blog:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        ref: master
+    - name: Git-Issues-Blog
+      uses: Sep0lkit/git-issues-blog@v1.3
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        POSTS_PATH: 'posts'
