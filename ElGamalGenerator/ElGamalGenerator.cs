@@ -9,11 +9,9 @@ namespace ElGamalGenerator
     {
         private static readonly Random Random = new();
 
-        private int _p, _g;
-
         // How do we provide private key? As long as we don't have friend in C#?
         // Can we be inherited by ElGamalEncryptionSystem and make this protected?
-        public int PrivateKey;
+        internal int PrivateKey;
 
         public ElGamalGenerator()
         {
@@ -27,11 +25,28 @@ namespace ElGamalGenerator
 
         public void Run()
         {
-            var rndSeed = Random.Next(8, 31);
+            var rndSeed = Random.Next(8, 30);
             var p = GeneratePrime(rndSeed);
             PublicKeys["p"] = p;
+            var g = GeneratePrimitiveRoot(p);
+            PublicKeys["g"] = g;
+            var x = GeneratePrivateKey(p, Random);
+            PrivateKey = x;
+            var y = GenerateYKey(p, g, x);
+            PublicKeys["y"] = y;
             // TODO: Add more content
             // pass
+        }
+
+        private static int GenerateYKey(int p, int g, int x)
+        {
+            return ModularPow(g, x, p);
+        }
+
+        private static int GeneratePrivateKey(int p, Random r)
+        {
+            int x = r.Next(2, p - 1);
+            return x;
         }
 
         private static bool IsMillerRabinPass(int candidate, int trialsNum, Random r)
@@ -65,7 +80,7 @@ namespace ElGamalGenerator
 
         private static bool TrialComposite(int roundTester, int candidate, int maxDivisionsByTwo, int evenComponent)
         {
-            var x = (int) BigInteger.ModPow(roundTester, evenComponent, candidate);
+            var x = ModularPow(roundTester, evenComponent, candidate);
 
             if (x == 1 || x == candidate - 1)
             {
@@ -74,7 +89,7 @@ namespace ElGamalGenerator
 
             for (int i = 0; i < maxDivisionsByTwo - 1; i++)
             {
-                x = (int) BigInteger.ModPow(x, 2, candidate);
+                x = ModularPow(x, 2, candidate);
 
                 if (x == 1)
                 {
@@ -133,6 +148,41 @@ namespace ElGamalGenerator
         private static int GenerateNBitNum(int n, Random r)
         {
             return r.Next(FastPow(2, n - 1) + 1, FastPow(2, n));
+        }
+
+        private static int GeneratePrimitiveRoot(int primeNumber)
+        {
+            var factors = new List<int>();
+            var phi = primeNumber - 1;
+            var factorizeNumber = phi;
+
+            for (int i = 2; i * i <= factorizeNumber; i++)
+            {
+                if (factorizeNumber % i == 0)
+                {
+                    factors.Add(i);
+                    while (factorizeNumber % i == 0)
+                    {
+                        factorizeNumber /= i;
+                    }
+                }
+            }
+
+            for (int res = 2; res <= primeNumber; res++)
+            {
+                bool isPrimitive = true;
+                for (int i = 0; i < factors.Count && isPrimitive; i++)
+                {
+                    isPrimitive &= ModularPow(res, phi / factors[i], primeNumber) != 1;
+                }
+
+                if (isPrimitive)
+                {
+                    return res;
+                }
+            }
+
+            return -1;
         }
 
         // TODO: Moderate access to the function
