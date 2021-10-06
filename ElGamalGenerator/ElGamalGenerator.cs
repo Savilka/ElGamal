@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using static ElGamalGenerator.Utils;
 
 namespace ElGamalGenerator
@@ -9,8 +8,6 @@ namespace ElGamalGenerator
     {
         private static readonly Random Random = new();
 
-        // How do we provide private key? As long as we don't have friend in C#?
-        // Can we be inherited by ElGamalEncryptionSystem and make this protected?
         internal int PrivateKey;
 
         public ElGamalGenerator()
@@ -26,16 +23,18 @@ namespace ElGamalGenerator
         public void Run()
         {
             var rndSeed = Random.Next(8, 30);
+
             var p = GeneratePrime(rndSeed);
             PublicKeys["p"] = p;
+
             var g = GeneratePrimitiveRoot(p);
             PublicKeys["g"] = g;
+
             var x = GeneratePrivateKey(p, Random);
             PrivateKey = x;
+
             var y = GenerateYKey(p, g, x);
             PublicKeys["y"] = y;
-            // TODO: Add more content
-            // pass
         }
 
         private static int GenerateYKey(int p, int g, int x)
@@ -45,7 +44,7 @@ namespace ElGamalGenerator
 
         private static int GeneratePrivateKey(int p, Random r)
         {
-            int x = r.Next(2, p - 1);
+            var x = r.Next(2, p - 1);
             return x;
         }
 
@@ -87,7 +86,7 @@ namespace ElGamalGenerator
                 return false;
             }
 
-            for (int i = 0; i < maxDivisionsByTwo - 1; i++)
+            for (var i = 0; i < maxDivisionsByTwo - 1; i++)
             {
                 x = ModularPow(x, 2, candidate);
 
@@ -108,6 +107,7 @@ namespace ElGamalGenerator
         private static int GeneratePrime(int seed)
         {
             var firstPrimes = ProceedSieveOfEratosthenes(350);
+
             while (true)
             {
                 var primeCandidate = GetLowLevelPrime(seed, firstPrimes);
@@ -123,12 +123,11 @@ namespace ElGamalGenerator
 
         private static int GetLowLevelPrime(int n, int[] firstPrimes)
         {
-            // if we pre-generate first primes we can run faster
-
             while (true)
             {
                 var primeCandidate = GenerateNBitNum(n, Random);
-                bool lowLevelCheck = true;
+                var lowLevelCheck = true;
+
                 foreach (var divisor in firstPrimes)
                 {
                     if (primeCandidate % divisor == 0 && divisor * divisor <= primeCandidate)
@@ -156,22 +155,22 @@ namespace ElGamalGenerator
             var phi = primeNumber - 1;
             var factorizeNumber = phi;
 
-            for (int i = 2; i * i <= factorizeNumber; i++)
+            for (var i = 2; i * i <= factorizeNumber; i++)
             {
-                if (factorizeNumber % i == 0)
+                if (factorizeNumber % i != 0) continue;
+                factors.Add(i);
+
+                while (factorizeNumber % i == 0)
                 {
-                    factors.Add(i);
-                    while (factorizeNumber % i == 0)
-                    {
-                        factorizeNumber /= i;
-                    }
+                    factorizeNumber /= i;
                 }
             }
 
-            for (int res = 2; res <= primeNumber; res++)
+            for (var res = 2; res <= primeNumber; res++)
             {
-                bool isPrimitive = true;
-                for (int i = 0; i < factors.Count && isPrimitive; i++)
+                var isPrimitive = true;
+
+                for (var i = 0; i < factors.Count && isPrimitive; i++)
                 {
                     isPrimitive &= ModularPow(res, phi / factors[i], primeNumber) != 1;
                 }
@@ -183,13 +182,6 @@ namespace ElGamalGenerator
             }
 
             return -1;
-        }
-
-        // TODO: Moderate access to the function
-        // Mb protected will be good decision?
-        public void Share()
-        {
-            // pass
         }
     }
 }

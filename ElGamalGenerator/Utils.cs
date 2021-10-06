@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
@@ -35,6 +34,7 @@ namespace ElGamalGenerator
             BigInteger bigBaseNum = baseNum;
             BigInteger bigModulus = modulus;
             BigInteger res = 1;
+
             while (power > 0)
             {
                 if (power % 2 == 0)
@@ -75,7 +75,7 @@ namespace ElGamalGenerator
                 }
             }
 
-            for (int i = 2; i <= n; i++)
+            for (var i = 2; i <= n; i++)
             {
                 if (isPrime[i])
                 {
