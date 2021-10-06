@@ -8,9 +8,7 @@ namespace ElGamalGenerator
     public class ElGamalGenerator
     {
         private static readonly Random Random = new();
-
-        private int _p, _g;
-
+        
         // How do we provide private key? As long as we don't have friend in C#?
         // Can we be inherited by ElGamalEncryptionSystem and make this protected?
         public int PrivateKey;
@@ -65,7 +63,7 @@ namespace ElGamalGenerator
 
         private static bool TrialComposite(int roundTester, int candidate, int maxDivisionsByTwo, int evenComponent)
         {
-            var x = (int) BigInteger.ModPow(roundTester, evenComponent, candidate);
+            var x = ModularPow(roundTester, evenComponent, candidate);
 
             if (x == 1 || x == candidate - 1)
             {
@@ -74,7 +72,7 @@ namespace ElGamalGenerator
 
             for (int i = 0; i < maxDivisionsByTwo - 1; i++)
             {
-                x = (int) BigInteger.ModPow(x, 2, candidate);
+                x = ModularPow(x, 2, candidate);
 
                 if (x == 1)
                 {

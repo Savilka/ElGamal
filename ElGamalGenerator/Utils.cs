@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace ElGamalGenerator
 {
@@ -29,16 +30,28 @@ namespace ElGamalGenerator
             return res;
         }
 
-        //  Add BigInteger!
         public static int ModularPow(int baseNum, int power, int modulus)
         {
-            var res = 1;
-            for (int i = 0; i < power; i++)
+            BigInteger bigBaseNum = baseNum;
+            BigInteger bigModulus = modulus;
+            BigInteger res = 1;
+            while (power > 0)
             {
-                res = (res * baseNum) % modulus;
+                if (power % 2 == 0)
+                {
+                    power /= 2;
+                    bigBaseNum = bigBaseNum * bigBaseNum % bigModulus;
+                }
+                else
+                {
+                    power -= 1;
+                    res = bigBaseNum * res % bigModulus;
+                    power /= 2;
+                    bigBaseNum = bigBaseNum * bigBaseNum % bigModulus;
+                }
             }
 
-            return res;
+            return (int) res;
         }
 
         /// <summary>
@@ -48,7 +61,6 @@ namespace ElGamalGenerator
         /// <returns> prime numbers less or equal to n </returns>
         public static int[] ProceedSieveOfEratosthenes(int n)
         {
-            var numOfPrimes = (int) (n / (Math.Log(n) - 1));
             var primes = new List<int>();
             var isPrime = new BitArray(n + 1, true);
 
