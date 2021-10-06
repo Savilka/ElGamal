@@ -1,4 +1,6 @@
-using static System.Math;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace ElGamalGenerator
 {
@@ -27,6 +29,7 @@ namespace ElGamalGenerator
             return res;
         }
 
+        //  Add BigInteger!
         public static int ModularPow(int baseNum, int power, int modulus)
         {
             var res = 1;
@@ -37,7 +40,7 @@ namespace ElGamalGenerator
 
             return res;
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -45,34 +48,30 @@ namespace ElGamalGenerator
         /// <returns> prime numbers less or equal to n </returns>
         public static int[] ProceedSieveOfEratosthenes(int n)
         {
-            // According to 'Prime Number Theorem' approximation of number of primes <= n
-            // Thanks https://math.stackexchange.com/questions/264544/how-to-find-number-of-prime-numbers-up-to-to-n
-            var numOfPrimes = (int) (n / Log(n - 1));
-            var primes = new int[numOfPrimes];
-            var isPrime = new bool[n + 1];
+            var numOfPrimes = (int) (n / (Math.Log(n) - 1));
+            var primes = new List<int>();
+            var isPrime = new BitArray(n + 1, true);
 
-            for (var i = 0; i < n; i++)
-            {
-                isPrime[i] = true;
-            }
-
-            var primeIdx = 0;
             for (var p = 2; p * p <= n; p++)
             {
                 if (isPrime[p])
                 {
-                    primes[primeIdx] = p;
-
                     for (var i = p * p; i <= n; i += p)
                     {
                         isPrime[i] = false;
                     }
                 }
-
-                primeIdx++;
             }
 
-            return primes;
+            for (int i = 2; i <= n; i++)
+            {
+                if (isPrime[i])
+                {
+                    primes.Add(i);
+                }
+            }
+
+            return primes.ToArray();
         }
     }
 }
