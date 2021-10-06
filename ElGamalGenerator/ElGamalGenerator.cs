@@ -11,7 +11,7 @@ namespace ElGamalGenerator
         
         // How do we provide private key? As long as we don't have friend in C#?
         // Can we be inherited by ElGamalEncryptionSystem and make this protected?
-        public int PrivateKey;
+        internal int PrivateKey;
 
         public ElGamalGenerator()
         {
@@ -28,10 +28,25 @@ namespace ElGamalGenerator
             var rndSeed = Random.Next(8, 30);
             var p = GeneratePrime(rndSeed);
             PublicKeys["p"] = p;
-            var g = GeneratePrimitiveRoot(p, Random);
+            var g = GeneratePrimitiveRoot(p);
             PublicKeys["g"] = g;
+            var x = GeneratePrivateKey(p, Random);
+            PrivateKey = x;
+            var y = GenerateYKey(p, g, x);
+            PublicKeys["y"] = y;
             // TODO: Add more content
             // pass
+        }
+
+        private static int GenerateYKey(int p, int g, int x)
+        {
+            return ModularPow(g, x, p);
+        }
+        
+        private static int GeneratePrivateKey(int p, Random r)
+        {
+            int x = r.Next(2, p - 1);
+            return x;
         }
 
         private static bool IsMillerRabinPass(int candidate, int trialsNum, Random r)
@@ -135,10 +150,9 @@ namespace ElGamalGenerator
             return r.Next(FastPow(2, n - 1) + 1, FastPow(2, n));
         }
 
-        private static int GeneratePrimitiveRoot(int primeNumber, Random r)
+        private static int GeneratePrimitiveRoot(int primeNumber)
         {
             var factors = new List<int>();
-            var primitiveRoots = new List<int>();
             var phi = primeNumber - 1;
             var factorizeNumber = phi;
             
