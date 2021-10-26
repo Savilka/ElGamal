@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
@@ -29,10 +30,11 @@ namespace ElGamalGenerator
             return res;
         }
 
-        public static int ModularPow(int baseNum, int power, int modulus)
+        public static int ModularPow(int baseNum, int power, int modulus, int multiplier = 1)
         {
             BigInteger bigBaseNum = baseNum;
             BigInteger bigModulus = modulus;
+            BigInteger bigMultiplier = multiplier;
             BigInteger res = 1;
 
             while (power > 0)
@@ -51,7 +53,32 @@ namespace ElGamalGenerator
                 }
             }
 
+            res = res * bigMultiplier % bigModulus;
             return (int) res;
+        }
+
+        public static List<int> Factorize(int factorizeNumber)
+        {
+            var factors = new List<int>();
+            var sqrt = (int) Math.Sqrt(factorizeNumber) + 1;
+            factors.Add(factorizeNumber);
+            for (var i = 2; i  <= sqrt; i++)
+            {
+                if (factorizeNumber % i != 0) continue;
+                factors.Add(i);
+
+                while (factorizeNumber % i == 0)
+                {
+                    factorizeNumber /= i;
+                }
+            }
+
+            return factors;
+        }
+
+        public static int Gcd(int a, int b)
+        {
+            return b != 0 ? Gcd(b, a % b) : a;
         }
 
         /// <summary>

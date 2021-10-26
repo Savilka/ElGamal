@@ -18,23 +18,55 @@ namespace ElGamalGenerator
             PrivateKey = 0;
         }
 
-        public Dictionary<string, int> PublicKeys { get; } = new();
+        internal Dictionary<string, int> PublicKeys { get; } = new();
 
         public void Run()
         {
-            var rndSeed = Random.Next(8, 30);
+            
+            Console.WriteLine("Choose option:");
+            Console.WriteLine("1: Generate prime number");
+            Console.WriteLine("2: Enter from the console");
+            var option = Convert.ToInt32(Console.ReadLine());
 
-            var p = GeneratePrime(rndSeed);
-            PublicKeys["p"] = p;
+            switch (option)
+            {
+                case 1:
+                    var rndSeed = Random.Next(8, 31);
+                    
+                    PublicKeys["p"] = GeneratePrime(rndSeed);
+                    PublicKeys["g"] = GeneratePrimitiveRoot(PublicKeys["p"]);
+                    PrivateKey = GeneratePrivateKey(PublicKeys["p"], Random);
+                    PublicKeys["y"] = GenerateYKey(PublicKeys["p"], PublicKeys["g"], PrivateKey);
+                    
+                    break;
+                case 2:
+                    Console.Write("Enter the number 'p': ");
+                    var pCandidate = Convert.ToInt32(Console.ReadLine());
+                    while (!IsMillerRabinPass(pCandidate, (int) Math.Log2(pCandidate) + 1, Random))
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("p is not prime number. Enter the prime number");
+                        Console.ResetColor();
+                        pCandidate = Convert.ToInt32(Console.ReadLine());
+                    }
+                    PublicKeys["p"] = pCandidate;
+                    
+                    Console.Write("Enter the number 'g': ");
+                    var gCandidate = Convert.ToInt32(Console.ReadLine());
+                    while (!CheckIsPrimitiveRoot(pCandidate, gCandidate))
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("g is not primitive root. Enter the primitive root");
+                        Console.ResetColor();
+                        gCandidate = Convert.ToInt32(Console.ReadLine());
+                    }
 
-            var g = GeneratePrimitiveRoot(p);
-            PublicKeys["g"] = g;
-
-            var x = GeneratePrivateKey(p, Random);
-            PrivateKey = x;
-
-            var y = GenerateYKey(p, g, x);
-            PublicKeys["y"] = y;
+                    PublicKeys["g"] = gCandidate;
+                    PrivateKey = GeneratePrivateKey(pCandidate, Random);
+                    PublicKeys["y"] = GenerateYKey(PublicKeys["p"], PublicKeys["g"], PrivateKey);
+                    break;
+            }
+            
         }
 
         private static int GenerateYKey(int p, int g, int x)
@@ -146,26 +178,15 @@ namespace ElGamalGenerator
 
         private static int GenerateNBitNum(int n, Random r)
         {
-            return r.Next(FastPow(2, n - 1) + 1, FastPow(2, n));
+            return r.Next(FastPow(2, n - 1) + 1, FastPow(2, n) - 1);
         }
 
         private static int GeneratePrimitiveRoot(int primeNumber)
         {
-            var factors = new List<int>();
+            
             var phi = primeNumber - 1;
-            var factorizeNumber = phi;
-
-            for (var i = 2; i * i <= factorizeNumber; i++)
-            {
-                if (factorizeNumber % i != 0) continue;
-                factors.Add(i);
-
-                while (factorizeNumber % i == 0)
-                {
-                    factorizeNumber /= i;
-                }
-            }
-
+            var factors = Factorize(phi);
+            
             for (var res = 2; res <= primeNumber; res++)
             {
                 var isPrimitive = true;
@@ -182,6 +203,34 @@ namespace ElGamalGenerator
             }
 
             return -1;
+        }
+
+        private static bool CheckIsPrimitiveRoot(int primeNumber, int candidateRoot)
+        {
+            
+            if (Gcd(candidateRoot, primeNumber) != 1)
+            {
+                return false;
+            }
+            
+            var phi = primeNumber - 1;
+
+            if (ModularPow(candidateRoot, phi / 2, primeNumber) == 1)
+            {
+                return false;
+            }
+            
+            var factors = Factorize(phi);
+
+            foreach (var factor in factors)
+            {
+                if (ModularPow(candidateRoot, phi / factor, primeNumber) == 1)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
